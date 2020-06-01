@@ -1,13 +1,10 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+import torch
 import sklearn
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
 
 INPUT_DATA_PATH = 'data/spotify_features.csv'
 INPUT_DATA_COLUMN_NAMES = [
@@ -39,7 +36,11 @@ INPUT_DATA_COLUMNS_TO_USE = [
 NUMERIC_COLUMNS_TO_SCALE = ['Loudness', 'Tempo']
 CATEGORICAL_COLUMNS_TO_ONE_HOT_ENCODE = ['Genre', 'Key', 'Mode', 'Time Signature']
 
-BATCH_SIZE = 64
+TRAINING_EPOCHS = 2
+BATCH_SIZE = 1000
+LEARNING_RATE = 0.001
+
+PRINT_TRAINING_PROGRESS_EVERY_N_MINI_BATCHES = 10
 
 class MusicDataSet(torch.utils.data.Dataset):
   def __init__(self, data_frame):
@@ -54,19 +55,38 @@ class MusicDataSet(torch.utils.data.Dataset):
     valence = row['Valence']
     del row['Valence']
 
-    return (row.tolist(), valence)
+    return row.values, valence
+
+class Model(torch.nn.Module):
+  def __init__(self):
+    super(Model, self).__init__()
+    self.linear = torch.nn.Linear(
+      53, # Number of inputs.
+      1 # Number of outputs.
+    )
+
+  def forward(self, input):
+    output = self.linear(input.float())
+    return output
 
 def main():
+  # Prepare the data. Load, preprocess, split and build data loaders.
   data_frame = load_input_data()
   data_frame = preprocess_input_data(data_frame)
+  train_data_loader, test_data_loader = build_data_loaders(data_frame)
+  # print_sample_mini_batch(train_data_loader)
 
-  train_data_frame, test_data_frame = train_test_split(data_frame, test_size = 1000, shuffle = True)
+  model = Model()
 
-  train_data_set = MusicDataSet(train_data_frame)
-  test_data_set = MusicDataSet(test_data_frame)
+  # Loss function: Mean absolute error (MAE).
+  criterion = torch.nn.L1Loss(reduction = 'mean')
 
-  train_data_loader = torch.utils.data.DataLoader(train_data_set, batch_size = BATCH_SIZE, shuffle = True)
-  test_data_loader = torch.utils.data.DataLoader(test_data_set, batch_size = BATCH_SIZE, shuffle = True)
+  # Adam optimization algorithm.
+  optimizer = torch.optim.Adam(model.parameters(), lr = LEARNING_RATE, weight_decay= 0)
+
+  train_model(model, train_data_loader, criterion, optimizer)
+
+  print('Finished training')
 
 def load_input_data():
   data_frame = pd.read_csv(
@@ -97,6 +117,75 @@ def preprocess_input_data(data_frame):
   )
 
   return data_frame
+
+# Returns two DataLoaders, one for training and one for testing.
+# Handles sampling the datasets, shuffling, etc. DataLoaders stack data
+# vertically (by column) instead of horizonally (by row), meaning that a
+# returned mini-batch will be a list of tensors, each representing a feature
+# and having $BatchSize values.
+def build_data_loaders(data_frame):
+  # Split the data set into two, 1000 record for testing, and all the rest for training.
+  train_data_frame, test_data_frame = sklearn.model_selection.train_test_split(
+    data_frame,
+    test_size = 1000,
+    shuffle = True
+  )
+
+  train_data_set = MusicDataSet(train_data_frame)
+  test_data_set = MusicDataSet(test_data_frame)
+
+  train_data_loader = torch.utils.data.DataLoader(
+    train_data_set,
+    batch_size = BATCH_SIZE,
+    shuffle = True
+  )
+
+  test_data_loader = torch.utils.data.DataLoader(
+    test_data_set,
+    batch_size = BATCH_SIZE,
+    shuffle = True
+  )
+
+  return train_data_loader, test_data_loader
+
+def print_sample_mini_batch(data_loader):
+  data_iterator = iter(data_loader)
+  inputs, labels = data_iterator.next()
+
+  print('Mini-batch inputs:')
+  print(inputs)
+
+  print('----------')
+
+  print('Mini-batch Labels:')
+  print(labels)
+
+def train_model(model, data_loader, criterion, optimizer):
+  for epoch in range(TRAINING_EPOCHS):
+    running_loss = 0.0
+
+    for i, mini_batch in enumerate(data_loader, 0):
+      inputs, labels = mini_batch
+
+      # Zero the parameter gradients.
+      optimizer.zero_grad()
+
+      outputs = model(inputs)
+
+      # Get loss for the predicted outputs.
+      loss = criterion(outputs, labels)
+
+      # Get gradients w.r.t to parameters.
+      loss.backward()
+
+      # Update parameters.
+      optimizer.step()
+
+      # Track statistics. Print every N mini-batches.
+      running_loss += loss.item()
+      if i % PRINT_TRAINING_PROGRESS_EVERY_N_MINI_BATCHES == (PRINT_TRAINING_PROGRESS_EVERY_N_MINI_BATCHES - 1):
+        print('[%d, %5d] loss: %.3f' % (epoch + 1, i + 1, running_loss / PRINT_TRAINING_PROGRESS_EVERY_N_MINI_BATCHES))
+        running_loss = 0.0
 
 if __name__ == '__main__':
   main()
