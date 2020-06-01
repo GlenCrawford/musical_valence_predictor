@@ -1,1 +1,5 @@
+# Input data files.
 data/*.csv
+
+# Trained model files.
+models/*.pth

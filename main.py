@@ -36,11 +36,13 @@ INPUT_DATA_COLUMNS_TO_USE = [
 NUMERIC_COLUMNS_TO_SCALE = ['Loudness', 'Tempo']
 CATEGORICAL_COLUMNS_TO_ONE_HOT_ENCODE = ['Genre', 'Key', 'Mode', 'Time Signature']
 
-TRAINING_EPOCHS = 2
+TRAINING_EPOCHS = 1
 BATCH_SIZE = 1000
 LEARNING_RATE = 0.001
 
 PRINT_TRAINING_PROGRESS_EVERY_N_MINI_BATCHES = 10
+
+MODEL_SAVE_PATH = 'models/model.pth'
 
 class MusicDataSet(torch.utils.data.Dataset):
   def __init__(self, data_frame):
@@ -84,9 +86,11 @@ def main():
   # Adam optimization algorithm.
   optimizer = torch.optim.Adam(model.parameters(), lr = LEARNING_RATE, weight_decay= 0)
 
+  print('Training model...')
   train_model(model, train_data_loader, criterion, optimizer)
+  print('Finished training.')
 
-  print('Finished training')
+  save_model(model)
 
 def load_input_data():
   data_frame = pd.read_csv(
@@ -186,6 +190,9 @@ def train_model(model, data_loader, criterion, optimizer):
       if i % PRINT_TRAINING_PROGRESS_EVERY_N_MINI_BATCHES == (PRINT_TRAINING_PROGRESS_EVERY_N_MINI_BATCHES - 1):
         print('[%d, %5d] loss: %.3f' % (epoch + 1, i + 1, running_loss / PRINT_TRAINING_PROGRESS_EVERY_N_MINI_BATCHES))
         running_loss = 0.0
+
+def save_model(model):
+  torch.save(model.state_dict(), MODEL_SAVE_PATH)
 
 if __name__ == '__main__':
   main()
