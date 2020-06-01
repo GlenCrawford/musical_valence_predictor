@@ -2,7 +2,12 @@ import numpy as np
 import pandas as pd
 import sklearn
 from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
 
 INPUT_DATA_PATH = 'data/spotify_features.csv'
 INPUT_DATA_COLUMN_NAMES = [
@@ -30,13 +35,38 @@ INPUT_DATA_COLUMNS_TO_USE = [
   'Mode', # String. 2 unique values: Major (65%) and Minor (35%). "Modality (major or minor) of a track, the type of scale from which its melodic content is derived." One-hot encode.
   'Time Signature' # String. 5 unique values: 4/4, 5/4, etc. "Notational convention to specify how many beats are in each bar (or measure)". One-hot encode.
 ]
+
 NUMERIC_COLUMNS_TO_SCALE = ['Loudness', 'Tempo']
 CATEGORICAL_COLUMNS_TO_ONE_HOT_ENCODE = ['Genre', 'Key', 'Mode', 'Time Signature']
+
+BATCH_SIZE = 64
+
+class MusicDataSet(torch.utils.data.Dataset):
+  def __init__(self, data_frame):
+    self.data_frame = data_frame
+
+  def __len__(self):
+    return len(self.data_frame)
+
+  def __getitem__(self, index):
+    row = self.data_frame.iloc[index]
+
+    valence = row['Valence']
+    del row['Valence']
+
+    return (row.tolist(), valence)
 
 def main():
   data_frame = load_input_data()
   data_frame = preprocess_input_data(data_frame)
-  print(data_frame)
+
+  train_data_frame, test_data_frame = train_test_split(data_frame, test_size = 1000, shuffle = True)
+
+  train_data_set = MusicDataSet(train_data_frame)
+  test_data_set = MusicDataSet(test_data_frame)
+
+  train_data_loader = torch.utils.data.DataLoader(train_data_set, batch_size = BATCH_SIZE, shuffle = True)
+  test_data_loader = torch.utils.data.DataLoader(test_data_set, batch_size = BATCH_SIZE, shuffle = True)
 
 def load_input_data():
   data_frame = pd.read_csv(
