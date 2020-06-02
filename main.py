@@ -51,6 +51,7 @@ class MusicDataSet(torch.utils.data.Dataset):
   def __len__(self):
     return len(self.data_frame)
 
+  # Return a row from the Pandas data frame, plus the extracted label value.
   def __getitem__(self, index):
     row = self.data_frame.iloc[index]
 
@@ -62,35 +63,48 @@ class MusicDataSet(torch.utils.data.Dataset):
 class Model(torch.nn.Module):
   def __init__(self):
     super(Model, self).__init__()
-    self.linear = torch.nn.Linear(
-      53, # Number of inputs.
-      1 # Number of outputs.
-    )
+    # Define the transformations of the model (similar concept to layers).
+    # Linear transformation arguments: Number of inputs, number of outputs.
+    self.linear1 = torch.nn.Linear(53, 16) # Input > Hidden layer #1.
+    self.leaky_relu = torch.nn.LeakyReLU()
+    self.linear2 = torch.nn.Linear(16, 1) # Hidden layer #1 > Output.
 
-  def forward(self, input):
-    output = self.linear(input.float())
-    return output
+  def forward(self, data):
+    data = data.float()
 
-def main():
+    data = torch.nn.functional.relu(self.linear1(data))
+    data = self.leaky_relu(data)
+    data = self.linear2(data)
+
+    return data
+
+def main(train = False):
   # Prepare the data. Load, preprocess, split and build data loaders.
   data_frame = load_input_data()
   data_frame = preprocess_input_data(data_frame)
   train_data_loader, test_data_loader = build_data_loaders(data_frame)
   # print_sample_mini_batch(train_data_loader)
 
-  model = Model()
+  if train:
+    model = Model()
 
-  # Loss function: Mean absolute error (MAE).
-  criterion = torch.nn.L1Loss(reduction = 'mean')
+    # Loss function: Mean Squared Error (MSE).
+    criterion = torch.nn.MSELoss()
 
-  # Adam optimization algorithm.
-  optimizer = torch.optim.Adam(model.parameters(), lr = LEARNING_RATE, weight_decay= 0)
+    # Adam optimization algorithm.
+    optimizer = torch.optim.Adam(model.parameters(), lr = LEARNING_RATE, weight_decay= 0)
 
-  print('Training model...')
-  train_model(model, train_data_loader, criterion, optimizer)
-  print('Finished training.')
+    print('Training model...')
+    train_model(model, train_data_loader, criterion, optimizer)
+    print('Finished training.')
 
-  save_model(model)
+    save_model(model)
+    print('Saved model.')
+  else:
+    model = load_model()
+
+  print('Testing model...')
+  test_model(model, test_data_loader)
 
 def load_input_data():
   data_frame = pd.read_csv(
@@ -177,7 +191,7 @@ def train_model(model, data_loader, criterion, optimizer):
       outputs = model(inputs)
 
       # Get loss for the predicted outputs.
-      loss = criterion(outputs, labels)
+      loss = criterion(outputs.double(), labels)
 
       # Get gradients w.r.t to parameters.
       loss.backward()
@@ -188,11 +202,29 @@ def train_model(model, data_loader, criterion, optimizer):
       # Track statistics. Print every N mini-batches.
       running_loss += loss.item()
       if i % PRINT_TRAINING_PROGRESS_EVERY_N_MINI_BATCHES == (PRINT_TRAINING_PROGRESS_EVERY_N_MINI_BATCHES - 1):
-        print('[%d, %5d] loss: %.3f' % (epoch + 1, i + 1, running_loss / PRINT_TRAINING_PROGRESS_EVERY_N_MINI_BATCHES))
+        print('[%d, %5d] MSE loss: %.3f' % (epoch + 1, i + 1, running_loss / PRINT_TRAINING_PROGRESS_EVERY_N_MINI_BATCHES))
         running_loss = 0.0
+
+def load_model():
+  model = Model()
+  model.load_state_dict(torch.load(MODEL_SAVE_PATH))
+  return model
 
 def save_model(model):
   torch.save(model.state_dict(), MODEL_SAVE_PATH)
 
+def test_model(model, data_loader):
+  # Loss function: Mean absolute error (MAE).
+  criterion = torch.nn.L1Loss(reduction = 'mean')
+
+  with torch.no_grad():
+    for mini_batch in data_loader:
+      inputs, labels = mini_batch
+
+      outputs = model(inputs)
+      loss = criterion(outputs, labels)
+
+      print('Test run loss (MAE): %.3f' % loss.item())
+
 if __name__ == '__main__':
-  main()
+  main(train = True)
