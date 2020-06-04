@@ -1,3 +1,4 @@
+import numpy as np
 import sklearn
 from sklearn.model_selection import train_test_split
 import torch
@@ -18,7 +19,7 @@ class MusicDataSet(torch.utils.data.Dataset):
     valence = row['Valence']
     del row['Valence']
 
-    return row.values, valence
+    return (row.values, np.array([valence]))
 
 # Returns two DataLoaders, one for training and one for testing.
 # Handles sampling the datasets, shuffling, etc. DataLoaders stack data

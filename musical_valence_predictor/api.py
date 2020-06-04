@@ -4,10 +4,10 @@ import musical_valence_predictor.serialization as Serialization
 import musical_valence_predictor.data_preprocessing as DataPreprocessing
 
 # Load model outside of API endpoint(s), so it's loaded once, not upon each request.
-model = Serialization.load_model()
+# model = Serialization.load_model()
 
 # Switch to eval mode, since the model is only being used for inference.
-model.eval()
+# model.eval()
 
 data_frame = DataPreprocessing.load_input_data()
 data_frame = DataPreprocessing.preprocess_input_data(data_frame)
