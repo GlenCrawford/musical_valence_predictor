@@ -5,6 +5,7 @@ import musical_valence_predictor.serialization as Serialization
 import musical_valence_predictor.models as Models
 import musical_valence_predictor.train as Train
 import musical_valence_predictor.test as Test
+import musical_valence_predictor.api as API
 
 def main():
   ARGUMENTS = Arguments.parse_arguments()

@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import sklearn
+from sklearn import preprocessing
 
 # Relative from the root directory.
 INPUT_DATA_PATH = 'data/spotify_features.csv'
