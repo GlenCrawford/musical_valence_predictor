@@ -1,3 +1,4 @@
+from torchsummary import summary
 import musical_valence_predictor.arguments as Arguments
 import musical_valence_predictor.data_preprocessing as DataPreprocessing
 import musical_valence_predictor.data_loaders as DataLoaders
@@ -24,6 +25,9 @@ def main():
     Train.RegressionModel.train(model, train_data_loader)
   else:
     model = Serialization.load_model()
+
+  # Print Keras-style model summary.
+  summary(model, input_size = (1, 53))
 
   Test.RegressionModel.test(model, test_data_loader)
 
