@@ -7,6 +7,15 @@ def parse_arguments():
   )
 
   parser.add_argument(
+    '--model',
+    action = 'store',
+    default = 'regression',
+    choices = ['regression', 'classification'],
+    dest = 'model',
+    help = 'Which model to run (regression or classification). Defaults to regression.'
+  )
+
+  parser.add_argument(
     '--skip-training',
     action = 'store_false',
     dest = 'train',

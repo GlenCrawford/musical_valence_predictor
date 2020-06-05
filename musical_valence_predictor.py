@@ -11,7 +11,10 @@ import musical_valence_predictor.api as API
 def main():
   ARGUMENTS = Arguments.parse_arguments()
 
+  print('Model: ' + ARGUMENTS.model)
+
   # Prepare the data. Load, preprocess, split and build data loaders.
+  print('Preparing training and test data...')
   data_frame = DataPreprocessing.load_input_data()
   data_frame = DataPreprocessing.preprocess_input_data(data_frame)
 
@@ -20,16 +23,20 @@ def main():
   if ARGUMENTS.print_sample_mini_batch:
     DataLoaders.print_sample_mini_batch(train_data_loader)
 
-  if ARGUMENTS.train:
+  if ARGUMENTS.model == 'regression':
     model = Models.RegressionModel.RegressionModel()
-    Train.RegressionModel.train(model, train_data_loader)
-  else:
-    model = Serialization.load_model()
 
-  # Print Keras-style model summary.
-  summary(model, input_size = (1, 53))
+    if ARGUMENTS.train:
+      Train.RegressionModel.train(model, train_data_loader)
+    else:
+      model = Serialization.load_model(model)
 
-  Test.RegressionModel.test(model, test_data_loader)
+    # Print Keras-style model summary.
+    summary(model, input_size = (1, 53))
+
+    Test.RegressionModel.test(model, test_data_loader)
+  elif ARGUMENTS.model == 'classification':
+    print('Placeholder for classification model.')
 
 if __name__ == '__main__':
   main()
