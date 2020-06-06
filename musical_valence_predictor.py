@@ -18,7 +18,7 @@ def main():
   data_frame = DataPreprocessing.load_input_data()
   data_frame = DataPreprocessing.preprocess_input_data(data_frame)
 
-  train_data_loader, test_data_loader = DataLoaders.build_data_loaders(data_frame)
+  train_data_loader, test_data_loader = DataLoaders.build_data_loaders(data_frame, ARGUMENTS.model)
 
   if ARGUMENTS.print_sample_mini_batch:
     DataLoaders.print_sample_mini_batch(train_data_loader)
@@ -36,7 +36,17 @@ def main():
 
     Test.RegressionModel.test(model, test_data_loader)
   elif ARGUMENTS.model == 'classification':
-    print('Placeholder for classification model.')
+    model = Models.ClassificationModel.ClassificationModel()
+
+    if ARGUMENTS.train:
+      Train.ClassificationModel.train(model, train_data_loader)
+    else:
+      model = Serialization.load_model(model)
+
+    # Print Keras-style model summary.
+    summary(model, input_size = (1, 53))
+
+    Test.ClassificationModel.test(model, test_data_loader)
 
 if __name__ == '__main__':
   main()

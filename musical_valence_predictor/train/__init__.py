@@ -1,1 +1,2 @@
 import musical_valence_predictor.train.regression_model as RegressionModel
+import musical_valence_predictor.train.classification_model as ClassificationModel
