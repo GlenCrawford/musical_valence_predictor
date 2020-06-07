@@ -18,7 +18,7 @@ def main():
   data_frame = DataPreprocessing.load_input_data()
   data_frame = DataPreprocessing.preprocess_input_data(data_frame)
 
-  train_data_loader, test_data_loader = DataLoaders.build_data_loaders(data_frame, ARGUMENTS.model)
+  train_data_loader, test_data_loader = DataLoaders.build_data_loaders(data_frame, ARGUMENTS.model, ARGUMENTS.batch_size)
 
   if ARGUMENTS.print_sample_mini_batch:
     DataLoaders.print_sample_mini_batch(train_data_loader)
@@ -27,7 +27,7 @@ def main():
     model = Models.RegressionModel.RegressionModel()
 
     if ARGUMENTS.train:
-      Train.RegressionModel.train(model, train_data_loader)
+      Train.RegressionModel.train(model, train_data_loader, ARGUMENTS.epochs)
     else:
       model = Serialization.load_model(model)
 
@@ -39,7 +39,7 @@ def main():
     model = Models.ClassificationModel.ClassificationModel()
 
     if ARGUMENTS.train:
-      Train.ClassificationModel.train(model, train_data_loader)
+      Train.ClassificationModel.train(model, train_data_loader, ARGUMENTS.epochs)
     else:
       model = Serialization.load_model(model)
 

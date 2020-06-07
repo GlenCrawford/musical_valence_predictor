@@ -3,8 +3,6 @@ import sklearn
 from sklearn.model_selection import train_test_split
 import torch
 
-BATCH_SIZE = 1000
-
 class MusicDataSet(torch.utils.data.Dataset):
   VALENCE_CLASS_RANGES = {
     0: (0.0, 0.35), # Sad.
@@ -47,7 +45,7 @@ class MusicDataSet(torch.utils.data.Dataset):
 # vertically (by column) instead of horizonally (by row), meaning that a
 # returned mini-batch will be a list of tensors, each representing a feature
 # and having $BatchSize values.
-def build_data_loaders(data_frame, model):
+def build_data_loaders(data_frame, model, batch_size):
   # Split the data set into two, 1000 records for testing, and all the rest for training.
   train_data_frame, test_data_frame = sklearn.model_selection.train_test_split(
     data_frame,
@@ -60,13 +58,13 @@ def build_data_loaders(data_frame, model):
 
   train_data_loader = torch.utils.data.DataLoader(
     train_data_set,
-    batch_size = BATCH_SIZE,
+    batch_size = batch_size,
     shuffle = True
   )
 
   test_data_loader = torch.utils.data.DataLoader(
     test_data_set,
-    batch_size = BATCH_SIZE,
+    batch_size = batch_size,
     shuffle = True
   )
 

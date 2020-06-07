@@ -3,10 +3,9 @@ import musical_valence_predictor.models as Models
 import musical_valence_predictor.serialization as Serialization
 
 LEARNING_RATE = 0.001
-TRAINING_EPOCHS = 1
 PRINT_TRAINING_PROGRESS_EVERY_N_MINI_BATCHES = 10
 
-def train(model, data_loader):
+def train(model, data_loader, number_of_epochs):
   # Loss function: Mean Squared Error (MSE).
   criterion = torch.nn.MSELoss()
 
@@ -15,7 +14,7 @@ def train(model, data_loader):
 
   print('Training model...')
 
-  for epoch in range(TRAINING_EPOCHS):
+  for epoch in range(number_of_epochs):
     running_loss = 0.0
 
     for i, mini_batch in enumerate(data_loader, 0):

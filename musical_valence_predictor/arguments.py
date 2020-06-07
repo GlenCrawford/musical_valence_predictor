@@ -16,6 +16,24 @@ def parse_arguments():
   )
 
   parser.add_argument(
+    '--epochs',
+    action = 'store',
+    default = 3,
+    type = int,
+    dest = 'epochs',
+    help = 'Number times that the training process will run through the training data set.'
+  )
+
+  parser.add_argument(
+    '--batch-size',
+    action = 'store',
+    default = 1000,
+    type = int,
+    dest = 'batch_size',
+    help = 'Number of examples from the training data set used per training iteration.'
+  )
+
+  parser.add_argument(
     '--skip-training',
     action = 'store_false',
     dest = 'train',
