@@ -9,7 +9,7 @@ class MusicDataSet(torch.utils.data.Dataset):
   VALENCE_CLASS_RANGES = {
     0: (0.0, 0.35), # Sad.
     1: (0.35, 0.65), # Neutral.
-    2: (0.65, 1.0), # Happy.
+    2: (0.65, 1.0) # Happy.
   }
 
   def __init__(self, data_frame, model):

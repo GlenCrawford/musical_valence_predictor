@@ -7,11 +7,11 @@ TRAINING_EPOCHS = 1
 PRINT_TRAINING_PROGRESS_EVERY_N_MINI_BATCHES = 10
 
 def train(model, data_loader):
-  # Loss function.
+  # Loss function: Categorical Cross Entropy. Outputs a probability for each class.
   criterion = torch.nn.CrossEntropyLoss()
 
-  # Optimization algorithm.
-  optimizer = torch.optim.SGD(model.parameters(), lr = LEARNING_RATE, momentum = 0.9)
+  # Adam optimization algorithm.
+  optimizer = torch.optim.Adam(model.parameters(), lr = LEARNING_RATE)
 
   print('Training model...')
 
@@ -26,19 +26,8 @@ def train(model, data_loader):
 
       outputs = model(inputs)
 
-      print('Labels:')
-      print(str(labels))
-      print('\n\n=========\n\n')
-      print('Outputs:')
-      print(str(outputs))
-
       # Get loss for the predicted outputs.
       loss = criterion(outputs, labels)
-
-      print('\n\n==========\n\n')
-      print('Loss:')
-      print(str(loss))
-      exit()
 
       # Get gradients with respect to parameters.
       loss.backward()
