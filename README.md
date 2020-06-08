@@ -77,7 +77,7 @@ optional arguments:
   -h, --help            show this help message and exit
   --model {regression,classification}
                         Which model to run (regression or classification). Defaults to regression.
-  --epochs EPOCHS       Number times that the training process will run through the training data set.
+  --epochs EPOCHS       Number of times that the training process will run through the training data set.
   --batch-size BATCH_SIZE
                         Number of examples from the training data set used per training iteration.
   --skip-training       Skip the training of the model and load a pre-trained one (model trains by default).
@@ -105,8 +105,6 @@ $ curl -v -H "Accept: application/json" "http://localhost:5000/predict?artist_na
   "prediction": 0.34
 }
 ```
-
-And then open up [http://localhost:5000/predict](http://localhost:5000/predict).
 
 ## Dataset credits
 
