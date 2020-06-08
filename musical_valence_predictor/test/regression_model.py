@@ -13,4 +13,6 @@ def test(model, data_loader):
       outputs = model(inputs)
       loss = criterion(outputs, labels)
 
-      print('Test run complete. Loss (MAE): %.3f' % loss.item())
+      print('Test batch loss (MAE): %.3f' % loss.item())
+
+  print('Test run complete.')
