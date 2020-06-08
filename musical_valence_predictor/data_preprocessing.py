@@ -35,17 +35,20 @@ INPUT_DATA_COLUMNS_TO_USE = [
 
 NUMERIC_COLUMNS_TO_SCALE = ['Loudness', 'Tempo']
 CATEGORICAL_COLUMNS_TO_ONE_HOT_ENCODE = ['Genre', 'Key', 'Mode', 'Time Signature']
+IDENTIFYING_COLUMNS = ['Artist Name', 'Track Name'] # Excluded by default.
 
-def load_input_data():
+def load_input_data(include_identifying_columns = False):
+  columns_to_use = (IDENTIFYING_COLUMNS + INPUT_DATA_COLUMNS_TO_USE) if include_identifying_columns else INPUT_DATA_COLUMNS_TO_USE
+
   data_frame = pd.read_csv(
     INPUT_DATA_PATH,
     header = 0,
     names = INPUT_DATA_COLUMN_NAMES,
-    usecols = INPUT_DATA_COLUMNS_TO_USE
+    usecols = columns_to_use
   )
 
   # Re-order the columns (column order is ignored by the usecols argument).
-  data_frame = data_frame[INPUT_DATA_COLUMNS_TO_USE]
+  data_frame = data_frame[columns_to_use]
 
   return data_frame
 

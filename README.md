@@ -1,11 +1,12 @@
 # Predicting musical valence of Spotify songs using PyTorch
 
-This is a project to predict the valence of songs in a dataset of 232,725 Spotify songs. Primarily, the goal was to build a machine learning model using [PyTorch](https://pytorch.org/) and deploy it to production as an [API using Flask](https://flask.palletsprojects.com/en/1.1.x/); the dataset just provided an interesting problem to solve in the process!
+This is a project to predict the valence of songs in a dataset of 232,725 Spotify songs. Primarily, the goal was to build a machine learning model using [PyTorch](https://pytorch.org/) and deploy it to production as an API using [Flask](https://flask.palletsprojects.com/en/1.1.x/); the dataset just provided an interesting problem to solve in the process!
 
 > You might remember "valence" from high school chemistry. It has to do with how many electrons an atom will lose, gain, or share when it joins with another atom. Psychologists put a spin on that concept, using the word "valence" to describe whether something is likely to make someone feel happy (positive valence) or sad (negative valence).
+
 _[The Echo Nest](https://web.archive.org/web/20170422195736/http://blog.echonest.com/post/66097438564/plotting-musics-emotional-valence-1950-2013)_
 
-The dataset, in addition to identifying the songs, artists, etc, contains values measuring their key, tempo, time signature, and so on, and includes an equal number of 10,000 songs per genre. Here are some example songs from the dataset, without any preprocessing:
+The dataset, in addition to identifying the songs, artists, etc, contains values measuring their key, tempo, time signature, and so on, and includes a roughly equal number of around 10,000 songs per genre. Here are some example songs from the dataset, without any preprocessing:
 
 | genre      | artist_name   | track_name   | track_id               | popularity | acousticness | danceability | duration_ms | energy | instrumentalness | key | liveness | loudness | mode  | speechiness | tempo   | time_signature | valence |
 |:----------:|:-------------:|:------------:|:----------------------:|:----------:|:------------:|:------------:|:-----------:|:------:|:----------------:|:---:|:--------:|:--------:|:-----:|:-----------:|:-------:|:--------------:|:-------:|
@@ -27,10 +28,9 @@ Danceability      1.000000  0.325807  0.438668  0.547154
 Energy            0.325807  1.000000  0.816088  0.436771
 Loudness          0.438668  0.816088  1.000000  0.399901
 Valence           0.547154  0.436771  0.399901  1.000000
-
 ```
 
-And here's a more pretty visualisation using Matplotlib and Seaborn, showing all features except for the categorical ones (Genre, Key, Mode and Time Signature):
+And here's a more pretty visualisation using [Matplotlib](https://matplotlib.org/) and [Seaborn](https://seaborn.pydata.org/), showing all features except for the categorical ones (Genre, Key, Mode and Time Signature):
 
 ![Numerical feature correlation heatmap.](docs/numerical_feature_correlation_heatmap.png?raw=true "Numerical feature correlation heatmap.")
 
@@ -68,6 +68,7 @@ In addition, you can override the defaults by specifying the model type, number 
 
 ```bash
 $ python musical_valence_predictor.py --help
+
 usage: musical_valence_predictor.py [-h] [--model {regression,classification}] [--epochs EPOCHS] [--batch-size BATCH_SIZE] [--skip-training] [--print-batch]
 
 PyTorch machine learning model to predict valence of a song based on musical characteristics, e.g. tempo, key, etc.
@@ -85,10 +86,24 @@ optional arguments:
 
 ## API
 
-You don't have to use the command line; the project wraps the regression model in an API built with Flask, allowing for easy deployment. To start the server in development mode, run:
+You don't have to use the command line; the project wraps the regression model in a JSON API built with Flask, allowing for easy deployment. To start the server in development mode, run:
 
 ```bash
 $ FLASK_ENV=development FLASK_APP=musical_valence_predictor flask run
+```
+
+Then query the API:
+
+```bash
+$ curl -v -H "Accept: application/json" "http://localhost:5000/predict?artist_name=BT&track_name=Yahweh"
+
+< HTTP/1.0 200 OK
+< Content-Type: application/json
+< 
+{
+  "expected": 0.36, 
+  "prediction": 0.34
+}
 ```
 
 And then open up [http://localhost:5000/predict](http://localhost:5000/predict).
