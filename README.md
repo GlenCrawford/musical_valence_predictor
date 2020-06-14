@@ -84,7 +84,39 @@ optional arguments:
   --print-batch         Print a sample mini-batch from the training data set.
 ```
 
-## API
+## Deployment
+
+### TorchServe
+
+The models can be deployed easily via [TorchServe](https://pytorch.org/serve/), making use of its inbuilt logging and metrics features. Note that at the time of writing, TorchServe is _extremely_ new, and as such is subject to change.
+
+First, package the artifacts of at least one of the models into a model archive (`.mar`) file with `torch-model-archiver` (these files are in the `.gitignore` file, so make sure to do a training run first):
+
+```bash
+$ torch-model-archiver --model-name regression_model --version 1.0 --model-file musical_valence_predictor/models/regression_model.py --serialized-file models/RegressionModel.pth --export-path models/ --archive-format default
+```
+
+Then start the server:
+
+```bash
+$ torchserve --start --foreground --no-config-snapshots --model-store models/ --models regression=regression_model.mar
+```
+
+Note the use of the `--foreground` argument. Remove it to start the server in the background, in which case you will want to use `torchserve --stop` to stop it afterwards.
+
+You can now use TorchServe's inference API. You can confirm this with the following command:
+
+```bash
+$ curl -X OPTIONS http://localhost:8080
+```
+
+And the models should be available on the following URL (for the regression model, as an example):
+
+```bash
+$ curl -X POST http://localhost:8080/predictions/regression
+```
+
+### API
 
 You don't have to use the command line; the project wraps the regression model in a JSON API built with Flask, allowing for easy deployment. To start the server in development mode, run:
 

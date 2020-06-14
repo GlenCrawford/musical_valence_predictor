@@ -5,3 +5,4 @@ data/*.csv
 
 # Trained model files.
 models/*.pth
+models/*.mar
